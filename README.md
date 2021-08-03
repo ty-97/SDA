@@ -10,3 +10,8 @@ The 3D dynamic nature of video data widens the sphere of actions with an order o
 </div>
 
 Selective dependency aggregation(SDA) models the dynamic video dependency perference and further boost the performance of existng action classification models.
+
+
+## Setups 
+
+
