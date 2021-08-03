@@ -6,7 +6,7 @@ Implementation for MM21 paper "Selective dependency aggregation for action class
 The 3D dynamic nature of video data widens the sphere of actions with an order of magnitude larger than the 2D static vision, resulting in multiple dependencies across space and time dimensions. Those dependencies contribute differently given different videos.
 
 <div align="center">
-  <img src="demo/ava_demo.gif" width="600px"/>
+  <img src="demo/example.pdf" width="600px"/>
 </div>
 
 Selective dependency aggregation(SDA) models the dynamic video dependency perference and further boost the performance of existng action classification models.
