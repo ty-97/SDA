@@ -18,9 +18,26 @@ Selective dependency aggregation(SDA) models the dynamic video dependency perfer
 
 
 ## Setups 
+Build a folder with the following structrue:
+
+
+```
+DATASET_NAME
+|_ category.txt
+|  |_ img
+|  |_ trainValTest
+```
 
 ### Dataset Prepare
-Please refer to [dataset.md] for details
+#### Something-something
+1. Please download the dataset and annotations from [dataset provider](https://20bn.com/datasets/something-something).
+2. Download the *category list* from the following links: ([category]())
+3. Download the *frame list* from the following links: (V1:[train](), [val](), V2:[train](), [val]()).
+4. Extract the raw file to folder img(V1); Extract the raw file and further extract the frames to folder img using [vid2img]()
+
+#### Diving48
+
+#### EPIC-KITCHEN55
 
 ### Requirements
 - Python 3
