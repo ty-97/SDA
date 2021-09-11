@@ -31,8 +31,8 @@ DATASET_NAME
 ### Dataset Prepare
 #### Something-something
 1. Please download the dataset and annotations from [dataset provider](https://20bn.com/datasets/something-something).
-2. Download the *category list* from the following links: ([category]())
-3. Download the *frame list* from the following links: (V1:[train](), [val](), V2:[train](), [val]()).
+2. Download the *category list* from the following links: ([category](https://pan.baidu.com/s/1h4wwB4KxNQRXHRDBL6M8EA), passwd:atp5)
+3. Download the *frame list* from the following links: ([V1](https://pan.baidu.com/s/1QdP-Jeo7T_PhO1uePFVX1A), passwd: 9kbq; [V2](https://pan.baidu.com/s/1z658wDg2Kb9U1yXMtWOIKQ)， passwd: iwfy).
 4. Extract the raw file to folder img(V1); Extract the raw file and further extract the frames to folder img using [vid2img]()
 
 #### Diving48
@@ -79,7 +79,7 @@ python test.py
 | SmallBig     | 8 x 3 x 2              | ---   | 57.0G x 3 x 2  | 48.3  | 61.6  |
 | SmallBig     | 16 x 3 x 2             | ---   | 114.0G x 3 x 2 | 50.0  | 63.8  |
 | TSN          | 8 x 1 x 1            | 23.9M | 32.9G          | 19.7  | 30    |
-| SDA-TSN      | 8 x 1 x 1            | 25.8M | 33.9G          | 47.5  | 60.6  |
+| SDA-TSN      | 8 x 1 x 1            | 25.8M | 33.9G          | [47.5](https://pan.baidu.com/s/1loslD5s9ZF3FZDKYa6AABA)(pw:63t1)  | 60.6  |
 | SDA-TSN      | 8 x 3 x 2            | 25.8M | 33.9G x 3 x 2  | 49.5  | 63.0  |
 | SDA-TSN      | 16 x 1 x 1           | 25.8M | 67.8G          | 49.3  | 62.4  |
 | SDA-TSN      | 16 x 3 x 2           | 25.8M | 67.8G x 3 x 2  | 50.6  | 64.7  |
