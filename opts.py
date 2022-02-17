@@ -86,7 +86,7 @@ parser.add_argument('--cdiv', type=int, default=2)
 parser.add_argument('--full_res', default=False, action="store_true",
                     help='use full resolution 256x256 for test as in Non-local I3D')
 parser.add_argument('--twice_sample', default=False, action="store_true", help='use twice sample for ensemble')
-parser.add_argument('--lr5', default=False, action="store_true")
+parser.add_argument('--ef_lr5', default=False, action="store_true")
 
 parser.add_argument('--net', type=str, default="E33D")
 parser.add_argument('--weights', type=str, default="weg")
