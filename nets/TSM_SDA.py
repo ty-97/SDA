@@ -3,7 +3,7 @@ import torch.nn as nn
 # from .utils import load_state_dict_from_url
 import torch.utils.model_zoo as model_zoo
 import torchvision.models as models
-from nets.SDA import Ensemble_fcstlfq as Ensemble
+from nets.SDA import SDA
 __all__ = ['ResNet', 'resnet50', 'resnet101', 'resnet152']
 
 
@@ -50,8 +50,8 @@ class Bottleneck(nn.Module):
         self.use_sda = use_sda
         # self.inplace = inplace
         if self.use_sda:
-            print('=> Using Ensemble_fcstlfq with cdiv: {}'.format(cdiv))
-            self.sda = Ensemble(planes, planes, cdiv, n_segment)
+            print('=> Using SDA with cdiv: {}'.format(cdiv))
+            self.sda = SDA(planes, DMB = ['LST','LT','LS','S122'], aggregation='sec_agg', cdiv=4, num_segments=8)
         
 
     def forward(self, x):
