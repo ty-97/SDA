@@ -11,7 +11,7 @@ class VideoNet(nn.Module):
     def __init__(self, num_class, num_segments, modality,
                 backbone='resnet50', net=None, consensus_type='avg',
                 dropout=0.5, partial_bn=True, print_spec=True, pretrain='imagenet', ef_lr5=False,
-                fc_lr5=False, element_filter=False, cdiv=2, target_transforms=None):
+                fc_lr5=False, cdiv=2, target_transforms=None):
         super(VideoNet, self).__init__()
         self.num_segments = num_segments
         self.modality = modality
@@ -24,7 +24,6 @@ class VideoNet(nn.Module):
 
         self.ef_lr5 = ef_lr5
         self.fc_lr5 = fc_lr5
-        self.element_filter = element_filter
         self.cdiv = cdiv
         self.target_transforms = target_transforms
 
@@ -44,6 +43,7 @@ class VideoNet(nn.Module):
             TSN_x = import_module(base_model_name)
             self.base_model = getattr(TSN_x, backbone)(pretrained=True if self.pretrain == 'imagenet' else False,
                 cdiv=self.cdiv, num_segments=self.num_segments)
+           
         #
             self.base_model.last_layer_name = 'fc'
             self.base_model.avgpool = nn.AdaptiveAvgPool2d(1)
@@ -106,11 +106,13 @@ class VideoNet(nn.Module):
 
         ef_lr_weight = []
         ef_lr_bias = []
+        
+        qvec = []
 
         conv_cnt = 0
         bn_cnt = 0
         for name, m in self.named_modules():
-            if 'eft' in name:
+            if 'sda' in name:
                 if isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv3d) or isinstance(m, torch.nn.ConvTranspose3d):
                     if self.ef_lr5:
                         ps = list(m.parameters())
@@ -137,7 +139,7 @@ class VideoNet(nn.Module):
                     bn.extend(list(m.parameters()))
                 elif len(m._modules) == 0:
                     if len(list(m.parameters())) > 0:
-                        raise ValueError("New atomic module type: {} in eft blocks. Need to give it a learning policy".format(type(m)))
+                        raise ValueError("New atomic module type: {} in sda blocks. Need to give it a learning policy".format(type(m)))
             else:
                 if isinstance(m, torch.nn.Conv2d) or isinstance(m, torch.nn.Conv3d):
                     ps = list(m.parameters())
@@ -173,6 +175,10 @@ class VideoNet(nn.Module):
                 elif len(m._modules) == 0:
                     if len(list(m.parameters())) > 0:
                         raise ValueError("New atomic module type: {}. Need to give it a learning policy".format(type(m)))
+        for m, p in self.named_parameters():
+            # print(m)
+            if m.split('.')[-1] == 'qVec':
+                qvec.append(p)
 
         return [
             {'params': first_conv_weight, 'lr_mult': 5 if self.modality == 'Flow' else 1, 'decay_mult': 1,
@@ -188,19 +194,21 @@ class VideoNet(nn.Module):
             {'params': custom_ops, 'lr_mult': 1, 'decay_mult': 1,
              'name': "custom_ops"},
             # for ef
-            {'params': ef_weight, 'lr_mult': 2, 'decay_mult': 1,
+            {'params': ef_weight, 'lr_mult': 5, 'decay_mult': 1,
              'name': "ef_weight"},
-            {'params': ef_bias, 'lr_mult': 4, 'decay_mult': 0,
+            {'params': ef_bias, 'lr_mult': 5, 'decay_mult': 0,
              'name': "ef_bias"},
-            {'params': ef_lr_weight, 'lr_mult': 2, 'decay_mult': 1,
-             'name': "ef_weight"},
-            {'params': ef_lr_bias, 'lr_mult': 4, 'decay_mult': 0,
+            {'params': ef_lr_weight, 'lr_mult': 5, 'decay_mult': 1,
+             'name': "ef_lr_weight"},
+            {'params': ef_lr_bias, 'lr_mult': 5, 'decay_mult': 0,
              'name': "ef_bias"},
             # for fc
             {'params': lr5_weight, 'lr_mult': 5, 'decay_mult': 1,
              'name': "lr5_weight"},
             {'params': lr10_bias, 'lr_mult': 10, 'decay_mult': 0,
              'name': "lr10_bias"},
+            {'params': qvec, 'lr_mult': 1, 'decay_mult': 0,
+             'name': "qvec"},
         ]
 
     def forward(self, input):
