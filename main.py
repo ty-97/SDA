@@ -96,7 +96,7 @@ def main():
                 partial_bn=not args.no_partialbn,
                 ef_lr5=args.ef_lr5,
                 # fc_lr5=not (args.tune_from and args.dataset in args.tune_from),
-                element_filter=args.element_filter,
+                
                 cdiv=args.cdiv,
                 target_transforms=target_transforms)
 
