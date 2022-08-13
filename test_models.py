@@ -15,7 +15,7 @@ from sklearn.metrics import confusion_matrix
 
 from ops.dataset import TSNDataSet
 # from ops.models import VideoNet
-from ops.models_test import VideoNet 
+# from ops.models_test import VideoNet 
 from ops.transforms import *
 from opts_test import parser
 from ops import dataset_config
@@ -23,9 +23,9 @@ from ops.utils import AverageMeter, accuracy
 # from ops.temporal_shift import make_temporal_pool
 
 from tensorboardX import SummaryWriter
-#os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
 #os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
-os.environ['CUDA_VISIBLE_DEVICES'] = '4'
+#os.environ['CUDA_VISIBLE_DEVICES'] = '4'
 def eval_video(video_data, net):
     net.eval()
     with torch.no_grad():
@@ -41,7 +41,7 @@ def eval_video(video_data, net):
         else:
             num_crop = 1*args.test_crops
         #++++++++++++++++
-        rst, weights = net(data)
+        rst= net(data)
         rst = rst.reshape(batch_size, num_crop, -1).mean(1)
         #
         if args.softmax:
@@ -50,7 +50,7 @@ def eval_video(video_data, net):
 
         rst = rst.data.cpu().numpy().copy()
 
-        return i, rst, label, weights
+        return i, rst, label
 
 
 def main():
@@ -102,16 +102,20 @@ def main():
     if not os.path.exists(test_log):
         os.mkdir(test_log)
 
-    log_path = './{}/log_{}_{}_{}_a{}_b{}_seg{}_{}.txt'.format(test_log, args.arch, args.dataset, "-".join(test_nets_list), \
+    log_path = './{}/log_{}_{}_{}_seg{}_{}.txt'.format(test_log, args.arch, args.dataset, "-".join(test_nets_list), \
         "-".join(str(a) for a in test_segments_list), \
         crop_size)
+
+    if args.model == 'TSN':
+        from ops.models_tsn import VideoNet
+    elif args.model == 'TSM':
+        from ops.models_tsm import VideoNet
 
     for this_net, this_segment, this_weight in zip(test_nets_list, test_segments_list, test_weights_list):
         
         model = VideoNet(num_class, this_segment, args.modality,
                 backbone=args.arch, net=this_net,
                 consensus_type=args.consensus_type,
-                element_filter=args.element_filter,
                 cdiv=args.cdiv)
 
         
@@ -179,7 +183,7 @@ def main():
         total_num = len(test_loader.dataset)
         print('total test number:', total_num)
         #
-        #model = torch.nn.DataParallel(model).cuda()
+        model = torch.nn.DataParallel(model).cuda()
         model.eval()
 
         net_list.append(model)
@@ -203,13 +207,13 @@ def main():
             
             this_label = None
             # end = time.time()
-            weight_data = []
+            #weight_data = []
             for (_, (data, label)), net in zip(data_label_pairs, net_list):
                 end = time.time()
                 rst = eval_video((i, data, label), net)
                 batch_times.update(time.time()-end, label.size(0))
                 this_rst_list.append(rst[1])
-                weight_data = rst[3] #bsz, 4, num_blocks, 4
+                #weight_data = rst[3] #bsz, 4, num_blocks, 4
                 this_label = label
             # assert len(this_rst_list) == len(coeff_list)
             # for i_coeff in range(len(this_rst_list)):
@@ -219,17 +223,17 @@ def main():
             for p, g in zip(ensembled_predict, this_label.cpu().numpy()):
                 output.append([p[None, ...], g])
 
-            for j in range(len(weight_data)):
-                weight_data[j] = sum(weight_data[j]).cpu().numpy()
+            #for j in range(len(weight_data)):
+            #    weight_data[j] = sum(weight_data[j]).cpu().numpy()
             
-            weight_data = np.array(weight_data) # 4 bsz 4 
+            #weight_data = np.array(weight_data) # 4 bsz 4 
             
             
-            weight_data = weight_data.transpose(1,0,2) # bsz 4 4
+            #weight_data = weight_data.transpose(1,0,2) # bsz 4 4
             #print(weight_data.shape)
 
-            for weight, l in zip(weight_data, this_label.cpu().numpy()): # 4, num_blocks, 4
-                weights_data[l] = weights_data[l] + weight
+            # for weight, l in zip(weight_data, this_label.cpu().numpy()): # 4, num_blocks, 4
+            #     weights_data[l] = weights_data[l] + weight
                 
             cnt_time = time.time() - proc_start_time
             prec1, prec5 = accuracy(torch.from_numpy(ensembled_predict), this_label, topk=(1, 5))
@@ -262,12 +266,12 @@ def main():
     # print('upper bound: {}'.format(upper))
     cls_acc_avg = np.sum(cls_acc*cls_cnt)/cls_cnt.sum()
     print(cls_acc_avg)
-    weights_data = weights_data/np.expand_dims(np.expand_dims(cls_cnt,-1).repeat(4,axis=-1),-1).repeat(4,axis=-1)
+    #weights_data = weights_data/np.expand_dims(np.expand_dims(cls_cnt,-1).repeat(4,axis=-1),-1).repeat(4,axis=-1)
 
-    import csv
-    with open(args.test_nets+'_cls_acc.csv','w') as f:
-        f_csv = csv.writer(f)
-        f_csv.writerow(cls_acc)
+    # import csv
+    # with open(args.test_nets+'_cls_acc.csv','w') as f:
+    #     f_csv = csv.writer(f)
+    #     f_csv.writerow(cls_acc)
     # with open('cls_count.csv','w') as f:
     #     f_csv = csv.writer(f)
     #     f_csv.writerow(cls_cnt.tolist())
